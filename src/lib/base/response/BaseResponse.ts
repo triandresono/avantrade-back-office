@@ -35,5 +35,4 @@ export default class BaseResponse {
 interface BaseResponseParams {
   status?: StatusResponse;
   data?: any;
-  failure?: boolean;
 }

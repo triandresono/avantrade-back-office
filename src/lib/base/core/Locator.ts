@@ -1,54 +1,37 @@
-type Constructor<T> = new (...args: any[]) => T;
+import "reflect-metadata";
+import { Container, type ServiceIdentifier, type Newable } from "inversify";
 
-type ServiceEntry = {
-  instance: any;
-  permanent: boolean;
-};
+export default class Locator {
+  private static container = new Container();
 
-const services = new Map<Constructor<any>, ServiceEntry>();
-
-export class Locator {
-  static put<T>(token: Constructor<T>, instance: T, permanent = false): T {
-    services.set(token, { instance, permanent });
+  static put<T>(token: ServiceIdentifier<T>, instance: T): T {
+    this.container.unbind(token); 
+    this.container.bind<T>(token).toConstantValue(instance);
     return instance;
   }
 
-  static lazyPut<T>(token: Constructor<T>, permanent = false): T {
-    let entry = services.get(token);
-    if (!entry) {
-      const instance = new token();
-      services.set(token, { instance, permanent });
-      return instance;
-    }
-    return entry.instance;
+  /**
+   * Untuk auto-inject dependency, class harus diberi decorator @injectable()
+   */
+  static lazyPut<T>(token: Newable<T>): T {
+    this.container.unbind(token); 
+    this.container.bind<T>(token).to(token).inSingletonScope();
+    return this.container.get<T>(token);
   }
 
-  static find<T>(token: Constructor<T>): T {
-    const entry = services.get(token);
-    if (!entry) {
-      throw new Error(`Service for ${token.name} not found`);
-    }
-    return entry.instance;
+  static find<T>(token: ServiceIdentifier<T>): T {
+    return this.container.get<T>(token);
   }
 
-  static remove<T>(token: Constructor<T>) {
-    const entry = services.get(token);
-    if (entry && !entry.permanent) {
-      if (typeof (entry.instance as any).dispose === "function") {
-        (entry.instance as any).dispose();
-      }
-      services.delete(token);
+  static remove<T>(token: ServiceIdentifier<T>): void {
+    if (this.container.isBound(token)) {
+      this.container.unbind(token);
     }
   }
 
-  static clear() {
-    for (const [token, entry] of services.entries()) {
-      if (!entry.permanent) {
-        if (typeof (entry.instance as any).dispose === "function") {
-          (entry.instance as any).dispose();
-        }
-        services.delete(token);
-      }
+  static clear(tokens: ServiceIdentifier<any>[]): void {
+    for (const token of tokens) {
+      this.remove(token);
     }
   }
 }
