@@ -1,16 +1,16 @@
 import HttpUtil from "./HttpUtil";
 import { type AxiosInstance, type AxiosResponse } from "axios";
-import HttpUtilHandler from "./HttpUtilHandler";
+import HttpResponseHandler from "./HttpResponseHandler";
 import type BaseResponse from "../../base/response/BaseResponse";
 import { Left, type Either } from "../../base/core/Either";
 import HttpClient from "./HttpClient";
 
 export default class HttpUtilImpl implements HttpUtil {
-  private handler: HttpUtilHandler;
+  private handler: HttpResponseHandler;
   private client: AxiosInstance;
 
   constructor() {
-    this.handler = new HttpUtilHandler();
+    this.handler = new HttpResponseHandler();
     this.client = new HttpClient().getInstance();
   }
 

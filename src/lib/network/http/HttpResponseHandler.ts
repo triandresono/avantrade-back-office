@@ -3,7 +3,7 @@ import BaseResponse from "../../base/response/BaseResponse";
 import { Left, Right, type Either } from "../../base/core/Either";
 import StatusResponse from "../../base/response/StatusResponse";
 
-export default class HttpUtilHandler {
+export default class HttpResponseHandler {
   responseHandler(
     response: AxiosResponse
   ): Either<BaseResponse, Record<string, any>> {
